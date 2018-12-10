@@ -16,19 +16,21 @@ self.addEventListener('install', function (e) {
 * otherwise request resource over network and cache response
 */
 self.addEventListener('fetch', function (e) {
-	var requestUrl = new URL(e.request.url);
-	if (requestUrl.protocol.startsWith('http')) {
-		e.respondWith(caches.open(cacheName).then(function (cache) {
-			return cache.match(e.request, { ignoreSearch: true }).then(function (response) {
-				if (response) {
-					return response;
-				}
+	if (e.request.method == 'GET') {
+		var requestUrl = new URL(e.request.url);
+		if (requestUrl.protocol.startsWith('http')) {
+			e.respondWith(caches.open(cacheName).then(function (cache) {
+				return cache.match(e.request, { ignoreSearch: true }).then(function (response) {
+					if (response) {
+						return response;
+					}
 
-				return fetch(e.request).then(function (networkResponse) {
-					cache.put(e.request, networkResponse.clone());
-					return networkResponse;
+					return fetch(e.request).then(function (networkResponse) {
+						cache.put(e.request, networkResponse.clone());
+						return networkResponse;
+					});
 				});
-			});
-		}));
+			}));
+		}
 	}
 });
